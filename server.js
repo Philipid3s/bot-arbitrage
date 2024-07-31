@@ -92,7 +92,7 @@ async function checkArbitrage(pair) {
 
     console.log(`${pair} - KuCoin Price: ${kuCoinPrice}, Binance Price: ${binancePrice}`);
 
-    const threshold = 0.005; // Arbitrage threshold: 5%
+    const threshold = 0.005; // Arbitrage threshold: 0.5%
 
     if (kuCoinPrice < binancePrice * (1 - threshold)) {
         return {
