@@ -71,7 +71,10 @@ http://localhost:3000/check-arbitrage
 
 ## How It Works
 
-Fetches real-time prices from KuCoin and Binance for the specified trading pairs.
-Checks if there's an arbitrage opportunity based on a configurable threshold.
-If an opportunity is found, fetches historical prices to determine if the price trend is bullish.
-Only considers the opportunity if the trend is bullish.
+1. Fetches real-time prices from KuCoin and Binance for the specified trading pairs.
+
+2. Checks if there's an arbitrage opportunity based on a configurable threshold.
+
+3. If an opportunity is found, fetches historical prices to determine if the price trend is bullish.
+
+4. Only considers the opportunity if the trend is bullish.
