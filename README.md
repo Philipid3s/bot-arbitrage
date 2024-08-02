@@ -78,3 +78,18 @@ http://localhost:3000/check-arbitrage
 3. If an opportunity is found, fetches historical prices to determine if the price trend is bullish.
 
 4. Only considers the opportunity if the trend is bullish.
+
+## Example Output
+
+Example output from the /check-arbitrage endpoint:
+
+```json
+[
+  {
+    "pair": "BTC-USDT",
+    "opportunity": "Buy on KuCoin, Sell on Binance",
+    "kuCoinPrice": 40000,
+    "binancePrice": 40500
+  }
+]
+```
