@@ -56,7 +56,7 @@ const pairs = [
     "SNX-USDT",
     "XTZ-USDT",
     "ZEC-USDT"
-  ];  
+];
 
 // Fetch prices from KuCoin
 async function getKuCoinPrice(pair) {
@@ -81,6 +81,28 @@ async function getBinancePrice(pair) {
     }
 }
 
+// Fetch historical prices for trend analysis
+async function getHistoricalPrices(pair, limit = 10) {
+    const binancePair = pair.replace('-', ''); // Convert pair to Binance format
+    try {
+        const response = await axios.get(`https://api.binance.com/api/v3/klines?symbol=${binancePair}&interval=1h&limit=${limit}`);
+        return response.data.map(candle => parseFloat(candle[4])); // Closing prices
+    } catch (error) {
+        console.error(`Error fetching historical prices for ${binancePair}: ${error.message}`);
+        return null;
+    }
+}
+
+// Determine if the price trend is bullish
+function isBullishTrend(historicalPrices) {
+    if (!historicalPrices || historicalPrices.length < 2) {
+        return false;
+    }
+    const movingAverage = historicalPrices.reduce((sum, price) => sum + price, 0) / historicalPrices.length;
+    const currentPrice = historicalPrices[historicalPrices.length - 1];
+    return currentPrice > movingAverage;
+}
+
 // Check for arbitrage opportunities
 async function checkArbitrage(pair) {
     const kuCoinPrice = parseFloat(await getKuCoinPrice(pair));
@@ -92,33 +114,41 @@ async function checkArbitrage(pair) {
 
     console.log(`${pair} - KuCoin Price: ${kuCoinPrice}, Binance Price: ${binancePrice}`);
 
-    const threshold = 0.005; // Arbitrage threshold: 0.5%
+    const threshold = 0.01; // Arbitrage threshold: 1%
 
+    let opportunity = null;
     if (kuCoinPrice < binancePrice * (1 - threshold)) {
-        return {
+        opportunity = {
             pair,
             opportunity: 'Buy on KuCoin, Sell on Binance',
             kuCoinPrice,
             binancePrice
         };
     } else if (binancePrice < kuCoinPrice * (1 - threshold)) {
-        return {
+        opportunity = {
             pair,
             opportunity: 'Buy on Binance, Sell on KuCoin',
             kuCoinPrice,
             binancePrice
         };
-    } else {
-        return null;
     }
+
+    if (opportunity) {
+        const historicalPrices = await getHistoricalPrices(pair);
+        const bullishTrend = isBullishTrend(historicalPrices);
+
+        if (bullishTrend) {
+            return opportunity;
+        }
+    }
+
+    return null;
 }
 
 app.get('/check-arbitrage', async (req, res) => {
     try {
         const results = await Promise.all(pairs.map(pair => checkArbitrage(pair)));
-
         const opportunities = results.filter(result => result !== null);
-
         res.json(opportunities);
     } catch (error) {
         console.error(error);
